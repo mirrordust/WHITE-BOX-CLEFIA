@@ -306,375 +306,61 @@ void WBTableSet128(unsigned char ** tables, unsigned char * rk, unsigned char * 
 	}
 }
 
-////生成Lookup Table
-//void LookupTable(unsigned char * table, int Mp, int Sp, unsigned char * rk, unsigned char * rn, unsigned char * wk)
+//void WBGfn4(unsigned char ** tables, unsigned char * y, const unsigned char * x, int r)
 //{
-//	unsigned char * src = (unsigned char *)malloc(sizeof(unsigned char));
-//	unsigned char t_table[256];
-//	*src = 0x00U;
-//	for (*src; *src <= 0xFFU; (*src)++)
+//	unsigned char fin[16], fout[16];
+//	unsigned char temp[4], t[4], t_XOR[4];
+//	unsigned char t_tables[576][256], C[4][4];
+//	for (int i = 0; i < 576; i++)
 //	{
-//		unsigned char temp;
-//		ByteXor(&temp,src,rk,1);
-//		ByteXor(&temp,&temp,rn,1);
-//		if (Sp == 0){
-//			temp = clefia_s0[temp];
-//		}
-//		else if (Sp == 1){
-//			temp = clefia_s1[temp];
-//		}
-//		else{
-//			printf("%s","error");
-//		}
-//		switch (Mp)
-//		{
-//		case 0 :
-//		case 11 :
-//		case 22 :
-//		case 33 :
-//		case 100 :
-//		case 111 :
-//		case 122 :
-//		case 133 : {
-//			temp = temp;
-//			break;
-//				   }
-//		case 1 :
-//		case 10 :
-//		case 23 :
-//		case 32 :
-//		case 102 :
-//		case 113 : 
-//		case 120 :
-//		case 131 : {
-//			temp = ClefiaMul2(temp);
-//			break;
-//				   }
-//		case 2 :
-//		case 13 :
-//		case 20 :
-//		case 31 :{
-//			temp = ClefiaMul4(temp);
-//			break;
-//				 }
-//		case 3 :
-//		case 12 :
-//		case 21 :
-//		case 30 :{
-//			temp = ClefiaMul6(temp);
-//			break;
-//				 }
-//		case 101 :
-//		case 110 :
-//		case 123 :
-//		case 132 :{
-//			temp = ClefiaMul8(temp);
-//			break;
-//				  }
-//		case 103 :
-//		case 112 :
-//		case 121 :
-//		case 130 :{
-//			temp = ClefiaMulA(temp);
-//			break;
-//				  }
-//		default : {
-//			printf("%s","error");
-//			break;
-//				  }
-//		}
-//		ByteXor(&temp,&temp,wk,1);
-//		t_table[*src] = temp;
-//		if (*src == 0xFFU)
-//			break;
+//		ByteCpy(t_tables[i],*(tables+i),256);
 //	}
-//	ByteCpy(table,t_table,256);
-//}
-
-//生成所有Lookup Tables
-//void AllLookupTables(unsigned char ** tables, const unsigned char * rk, unsigned char * R, unsigned char * _WK, const int key_bitlen)
-//{
-//	int round_number = 0, Mp = 0, Sp = 0;
-//	unsigned char WK[32];
-//	ByteCpy(WK,_WK,32);
-//	unsigned char zero[4];
-//	for (int k = 0; k < 4; k++){
-//		zero[k] = 0x00U;
-//	}
-//	if (key_bitlen == 128){
-//		round_number = 18;
-//		unsigned char t_tables[576][256],wk[4][4];
-//		unsigned char t_rk[4],r1[4],r2[4],r3[4],temp[4];
-//		//round = 1		16 * 2 = 32 lookup tables
+//	ByteCpy(fin,x,16);
+//	for (int k = 0; k < r; k++){
 //		//left
-//		ByteCpy(t_rk,rk,4); rk += 4;
-//		ByteCpy(r1,zero,4);
-//		//ByteCpy(r1,R,4);
-//		//R += 4;
-//		ByteCpy(r2,R,4); R += 4;
-//		ByteCpy(r3,&WK[0],4);
-//		//ByteCpy(r3,R,4);
-//		//R += 4;
-//		ByteCpy(wk[0],R,4); R += 4;
-//		ByteCpy(wk[1],R,4); R += 4;
-//		ByteCpy(wk[2],R,4); R += 4;
-//
-//		ByteXor(temp,r2,r3,4);
-//		ByteXor(temp,temp,wk[0],4);
-//		ByteXor(temp,temp,wk[1],4);
-//		ByteXor(wk[3],temp,wk[2],4);
-//
-//		for (int i = 0; i < 4; i++)
-//		{
+//		ByteCpy(fout,fin,4); //C[r,0]
+//		ByteCpy(temp,fin,4); //C[r,1]
+//		for (int i = 0; i < 4; i++){
 //			for (int j = 0; j < 4; j++)
 //			{
-//				Mp = i * 10 + j;
-//				if (j % 2 == 0)
-//					Sp = 0;
-//				else
-//					Sp = 1;
-//				LookupTable(t_tables[4 * i + j],Mp,Sp,&t_rk[j],&r1[j],&wk[j][i]);
+//				ByteCpy(&C[i][j],&t_tables[32*k + 4*i + j][temp[j]],1);
 //			}
 //		}
+//		for (int i = 0; i < 4; i++)
+//		{
+//			ByteCpy(&t_XOR[i],&C[i][0],1);
+//			ByteXor(&t_XOR[i],&t_XOR[i],&C[i][1],1);
+//			ByteXor(&t_XOR[i],&t_XOR[i],&C[i][2],1);
+//			ByteXor(&t_XOR[i],&t_XOR[i],&C[i][3],1);
+//		}
+//		ByteXor(t_XOR,t_XOR,temp,4);
+//		ByteCpy(fout + 4,t_XOR,4);
 //		//right
-//		ByteCpy(t_rk,rk,4); rk += 4;
-//		ByteCpy(r1,zero,4);
-//		ByteCpy(r2,R,4); R += 4;
-//		ByteCpy(r3,&WK[1],4);
-//		ByteCpy(wk[0],R,4); R += 4;
-//		ByteCpy(wk[1],R,4); R += 4;
-//		ByteCpy(wk[2],R,4); R += 4;
-//
-//		ByteXor(temp,r2,r3,4);
-//		ByteXor(temp,temp,wk[0],4);
-//		ByteXor(temp,temp,wk[1],4);
-//		ByteXor(wk[3],temp,wk[2],4);
-//
-//		for (int i = 0; i < 4; i++)
-//		{
+//		ByteCpy(fout + 8,fin + 8,4); //C[r,2]
+//		ByteCpy(temp,fin + 8,4); //C[r,3]
+//		for (int i = 0; i < 4; i++){
 //			for (int j = 0; j < 4; j++)
 //			{
-//				Mp = 100 + i * 10 + j;
-//				if (j % 2 == 1)
-//					Sp = 0;
-//				else
-//					Sp = 1;
-//				LookupTable(t_tables[16 + 4 * i + j],Mp,Sp,&t_rk[j],&r1[j],&wk[j][i]);
+//				ByteCpy(&C[i][j],&t_tables[32*k + 16 + 4*i + j][temp[j]],1);
 //			}
 //		}
-//		//round = 2,...,r-1
-//		for (int l = 1; l < round_number - 1; l++)
-//		{
-//			//left
-//			ByteCpy(t_rk,rk,4); rk += 4;
-//			ByteCpy(r1,R-8*4,4);
-//			if (l == 1){
-//				ByteCpy(r2,zero,4);
-//			}else{
-//				ByteCpy(r2,R-12*4,4);
-//			}
-//			if (l == round_number - 2){
-//				ByteCpy(r3,zero,4);
-//			}else{
-//				ByteCpy(r3,R,4); R += 4;
-//			}
-//			ByteCpy(wk[0],R,4); R += 4;
-//			ByteCpy(wk[1],R,4); R += 4;
-//			ByteCpy(wk[2],R,4); R += 4;
-//
-//			ByteXor(temp,r2,r3,4);
-//			ByteXor(temp,temp,wk[0],4);
-//			ByteXor(temp,temp,wk[1],4);
-//			ByteXor(wk[3],temp,wk[2],4);
-//
-//			for (int i = 0; i < 4; i++)
-//			{
-//				for (int j = 0; j < 4; j++)
-//				{
-//					Mp = i * 10 + j;
-//					if (j % 2 == 0)
-//						Sp = 0;
-//					else
-//						Sp = 1;
-//					LookupTable(t_tables[32 * l + 4 * i + j],Mp,Sp,&t_rk[j],&r1[j],&wk[j][i]);
-//				}
-//			}
-//			//right
-//			ByteCpy(t_rk,rk,4); rk += 4;
-//			if (l == round_number - 2){
-//				ByteCpy(r1,R-7*4,4);
-//			}else{
-//				ByteCpy(r1,R-8*4,4);
-//			}
-//			if (l == 1){
-//				ByteCpy(r2,zero,4);
-//			}else if (l == round_number - 2){
-//				ByteCpy(r2,R-19*4,4);
-//			}{
-//				ByteCpy(r2,R-20*4,4);
-//			}
-//			if (l == round_number - 2){
-//				ByteCpy(r3,zero,4);
-//			}else{
-//				ByteCpy(r3,R,4); R += 4;
-//			}
-//			ByteCpy(wk[0],R,4); R += 4;
-//			ByteCpy(wk[1],R,4); R += 4;
-//			ByteCpy(wk[2],R,4); R += 4;
-//
-//			ByteXor(temp,r2,r3,4);
-//			ByteXor(temp,temp,wk[0],4);
-//			ByteXor(temp,temp,wk[1],4);
-//			ByteXor(wk[3],temp,wk[2],4);
-//
-//			for (int i = 0; i < 4; i++)
-//			{
-//				for (int j = 0; j < 4; j++)
-//				{
-//					Mp = 100 + i * 10 + j;
-//					if (j % 2 == 1)
-//						Sp = 0;
-//					else
-//						Sp = 1;
-//					LookupTable(t_tables[32 * l + 16 + 4 * i + j],Mp,Sp,&t_rk[j],&r1[j],&wk[j][i]);
-//				}
-//			}
-//		}
-//		//round = r		16 * 2 = 32 lookup tables
-//		//left
-//		ByteCpy(t_rk,rk,4); rk += 4;
-//		ByteCpy(r1,zero,4);
-//		ByteCpy(r2,R-10*4,4);
-//		ByteCpy(r3,&WK[2],4);
-//		ByteCpy(wk[0],R,4); R += 4;
-//		ByteCpy(wk[1],R,4); R += 4;
-//		ByteCpy(wk[2],R,4); R += 4;
-//
-//		ByteXor(temp,r2,r3,4);
-//		ByteXor(temp,temp,wk[0],4);
-//		ByteXor(temp,temp,wk[1],4);
-//		ByteXor(wk[3],temp,wk[2],4);
-//
 //		for (int i = 0; i < 4; i++)
 //		{
-//			for (int j = 0; j < 4; j++)
-//			{
-//				Mp = i * 10 + j;
-//				if (j % 2 == 0)
-//					Sp = 0;
-//				else
-//					Sp = 1;
-//				LookupTable(t_tables[32 * (round_number - 1) + 4 * i + j],Mp,Sp,&t_rk[j],&r1[j],&wk[j][i]);
-//			}
+//			ByteCpy(&t_XOR[i],&C[i][0],1);
+//			ByteXor(&t_XOR[i],&t_XOR[i],&C[i][1],1);
+//			ByteXor(&t_XOR[i],&t_XOR[i],&C[i][2],1);
+//			ByteXor(&t_XOR[i],&t_XOR[i],&C[i][3],1);
 //		}
-//		//right
-//		ByteCpy(t_rk,rk,4); rk += 4;
-//		ByteCpy(r1,zero,4);
-//		ByteCpy(r2,R-17*4,4);
-//		ByteCpy(r3,&WK[3],4);
-//		ByteCpy(wk[0],R,4); R += 4;
-//		ByteCpy(wk[1],R,4); R += 4;
-//		ByteCpy(wk[2],R,4); R += 4;
-//
-//		ByteXor(temp,r2,r3,4);
-//		ByteXor(temp,temp,wk[0],4);
-//		ByteXor(temp,temp,wk[1],4);
-//		ByteXor(wk[3],temp,wk[2],4);
-//
-//		for (int i = 0; i < 4; i++)
-//		{
-//			for (int j = 0; j < 4; j++)
-//			{
-//				Mp = i * 10 + j;
-//				if (j % 2 == 1)
-//					Sp = 0;
-//				else
-//					Sp = 1;
-//				LookupTable(t_tables[32 * (round_number - 1) + 16 + 4 * i + j],Mp,Sp,&t_rk[j],&r1[j],&wk[j][i]);
-//			}
+//		ByteXor(t_XOR,t_XOR,temp,4);
+//		ByteCpy(fout + 12,t_XOR,4);
+//		//<<<<
+//		if (k < r-1){
+//			ByteCpy(fin + 0,  fout + 4, 12);
+//			ByteCpy(fin + 12, fout + 0, 4);
 //		}
-//		//for (int i = 0; i < 576; i++)///////////////////////////////////////////////
-//		//{
-//		//	for (int j = 0; j < 256; j++)
-//		//	{
-//		//		printf("%02x  ",t_tables[i][j]);
-//		//	}
-//		//	printf("\n-------------------------------------\n");
-//		//}/////////////////////////////////////////////////////////////////////
-//		for (int i = 0; i < 576; i++)
-//		{
-//			ByteCpy(*(tables + i),t_tables[i],256);
-//		}
-//		//for (int i = 0; i < 576; i++)/////////////////////////////////////////
-//		//{
-//		//	for (int j = 0; j < 256; j++)
-//		//	{
-//		//		printf("%02x  ",*(*(tables+i)+j));
-//		//	}
-//		//	printf("\n-------------------------------------\n");
-//		//}//////////////////////////////////////////////////////
 //	}
+//	ByteCpy(y,fout,16);
 //}
-
-void WBGfn4(unsigned char ** tables, unsigned char * y, const unsigned char * x, int r)
-{
-	unsigned char fin[16], fout[16];
-	unsigned char temp[4], t[4], t_XOR[4];
-	unsigned char t_tables[576][256], C[4][4];
-	for (int i = 0; i < 576; i++)
-	{
-		ByteCpy(t_tables[i],*(tables+i),256);
-	}
-	ByteCpy(fin,x,16);
-	for (int k = 0; k < r; k++){
-		//left
-		ByteCpy(fout,fin,4); //C[r,0]
-		ByteCpy(temp,fin,4); //C[r,1]
-		for (int i = 0; i < 4; i++){
-			for (int j = 0; j < 4; j++)
-			{
-				ByteCpy(&C[i][j],&t_tables[32*k + 4*i + j][temp[j]],1);
-			}
-			//ByteCpy(&t_XOR[i],&t[0],1);
-			//ByteXor(&t_XOR[i],&t_XOR[i],&t[1],1);
-			//ByteXor(&t_XOR[i],&t_XOR[i],&t[2],1);
-			//ByteXor(&t_XOR[i],&t_XOR[i],&t[3],1);
-		}
-		for (int i = 0; i < 4; i++)
-		{
-			ByteCpy(&t_XOR[i],&C[i][0],1);
-			ByteXor(&t_XOR[i],&t_XOR[i],&C[i][1],1);
-			ByteXor(&t_XOR[i],&t_XOR[i],&C[i][2],1);
-			ByteXor(&t_XOR[i],&t_XOR[i],&C[i][3],1);
-		}
-		ByteXor(t_XOR,t_XOR,temp,4);
-		ByteCpy(fout + 4,t_XOR,4);
-		//right
-		ByteCpy(fout + 8,fin + 8,4); //C[r,2]
-		ByteCpy(temp,fin + 8,4); //C[r,3]
-		for (int i = 0; i < 4; i++){
-			for (int j = 0; j < 4; j++)
-			{
-				ByteCpy(&C[i][j],&t_tables[32*k + 16 + 4*i + j][temp[j]],1);
-			}
-		}
-		for (int i = 0; i < 4; i++)
-		{
-			ByteCpy(&t_XOR[i],&C[i][0],1);
-			ByteXor(&t_XOR[i],&t_XOR[i],&C[i][1],1);
-			ByteXor(&t_XOR[i],&t_XOR[i],&C[i][2],1);
-			ByteXor(&t_XOR[i],&t_XOR[i],&C[i][3],1);
-		}
-		ByteXor(t_XOR,t_XOR,temp,4);
-		ByteCpy(fout + 12,t_XOR,4);
-		//<<<<
-		if (k < r-1){
-			ByteCpy(fin + 0,  fout + 4, 12);
-			ByteCpy(fin + 12, fout + 0, 4);
-		}
-	}
-	ByteCpy(y,fout,16);
-}
 
 void ClefiaF0Xor(unsigned char *dst, const unsigned char *src, const unsigned char *rk)
 {
@@ -1026,26 +712,26 @@ void WBInterEnc128(unsigned char * ct, const unsigned char * pt, unsigned char *
 	ByteCpy(ct,fout,16);
 }
 
-void WBEncrypt(unsigned char ** table, unsigned char * Cout,unsigned char * ct, const unsigned char * pt, const int r)
-{
-	unsigned char rin[16], rout[16];
-
-	ByteCpy(rin, pt, 16);
-
-	unsigned char aa[4];
-	ByteCpy(aa,rin+4,4);
-	//BytePut(aa,4);//////
-	ByteXor(rin + 0, rin + 0, Cout + 0, 4);
-	ByteCpy(aa,rin+4,4);
-	//BytePut(aa,4);////////
-	ByteXor(rin + 8, rin + 8, Cout + 4, 4);
-
-	WBGfn4(table, rout, rin, r);
-
-	ByteCpy(ct, rout, 16);
-	ByteXor(ct + 4, ct + 4, Cout + 8, 4);
-	ByteXor(ct + 12, ct + 12, Cout + 12, 4);
-}
+//void WBEncrypt(unsigned char ** table, unsigned char * Cout,unsigned char * ct, const unsigned char * pt, const int r)
+//{
+//	unsigned char rin[16], rout[16];
+//
+//	ByteCpy(rin, pt, 16);
+//
+//	unsigned char aa[4];
+//	ByteCpy(aa,rin+4,4);
+//	//BytePut(aa,4);//////
+//	ByteXor(rin + 0, rin + 0, Cout + 0, 4);
+//	ByteCpy(aa,rin+4,4);
+//	//BytePut(aa,4);////////
+//	ByteXor(rin + 8, rin + 8, Cout + 4, 4);
+//
+//	WBGfn4(table, rout, rin, r);
+//
+//	ByteCpy(ct, rout, 16);
+//	ByteXor(ct + 4, ct + 4, Cout + 8, 4);
+//	ByteXor(ct + 12, ct + 12, Cout + 12, 4);
+//}
 
 void ClefiaEncrypt(unsigned char *ct, const unsigned char *pt, const unsigned char *rk, const int r)
 {

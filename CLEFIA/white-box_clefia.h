@@ -40,10 +40,8 @@ void WBF1Table(unsigned char ** tables, unsigned char * rk, unsigned char * r1, 
 void WBTableSet128(unsigned char ** tables, unsigned char * rk, unsigned char * R, unsigned char * wk);
 void WBInterEnc128(unsigned char * ct, const unsigned char * pt, unsigned char ** tables);
 void test(unsigned char * ct, const unsigned char * pt, unsigned char ** tables);
-//void LookupTable(unsigned char * table, int Mp, int Sp, unsigned char * rk, unsigned char * rn, unsigned char * wk);
-//void AllLookupTables(unsigned char ** tables, const unsigned char * rk, unsigned char * R, unsigned char * _WK, const int key_bitlen);
-void WBGfn4(unsigned char ** tables, unsigned char * y, const unsigned char * x, int r);
-void WBEncrypt(unsigned char ** table, unsigned char * Cout,unsigned char * ct, const unsigned char * pt, const int r);
+//void WBGfn4(unsigned char ** tables, unsigned char * y, const unsigned char * x, int r);
+//void WBEncrypt(unsigned char ** table, unsigned char * Cout,unsigned char * ct, const unsigned char * pt, const int r);
 
 int ClefiaKeySet(unsigned char *rk, const unsigned char *skey, const int key_bitlen);
 void ClefiaEncrypt(unsigned char *ct, const unsigned char *pt, const unsigned char *rk, const int r);
