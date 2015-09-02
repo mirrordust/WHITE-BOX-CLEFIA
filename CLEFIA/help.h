@@ -1,0 +1,1 @@
+void BytePut(const unsigned char *data, int bytelen);
