@@ -21,14 +21,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	unsigned char rk[8 * 26 + 16]; /* 8 bytes x 26 rounds(max) + whitening keys */
 	int r;
 
-	//随机数
-	unsigned char R[192];
-	RandomNumber(R);
-	unsigned char Cout[16];
-	for (int i = 0; i < 16; i++)
-	{
-		Cout[i] = 0x00U;
-	}
+	//随机数 (128-bit key)
+	unsigned char R[(18 - 2) * 4];
+	RandomNumber_32bit(R, (18 - 2));
+	
+	unsigned char C_out[4 * 4];
+	RandomNumber_32bit(C_out, 4);
 
 	printf("--- Test ---\n");
 	printf("plaintext:  "); BytePut(pt, 16);
@@ -55,40 +53,63 @@ int _tmain(int argc, _TCHAR* argv[])
 	for (int i = 0; i < 576; i++){
 		tables[i] = (unsigned char *)calloc(256,sizeof(unsigned char));
 	}
-	WBTableSet128(tables, rk, R, wk);
+	WBTableSet128(tables, rk, R, wk, C_out);
 
 	//加密
-	printf("ciphertext: \n");
-	WBInterEnc128(dst2,pt,tables);
+	printf("ciphertext: ");
+
+	unsigned char pt_WB[16];
+	ByteCpy(pt_WB, pt, 16);
+	ByteXor(pt_WB + 0, pt_WB + 0, C_out + 0, 4);
+	ByteXor(pt_WB + 8, pt_WB + 8, C_out + 4, 4);
+
+	WBInterEnc128(dst2,pt_WB,tables);
+
+	ByteXor(dst2 + 0, dst2 + 0, C_out + 8, 4);
+	ByteXor(dst2 + 8, dst2 + 8, C_out + 12, 4);
+
 	BytePut(dst2,16);
 
 	printf("=====================================================\n");
 
 	/* decryption */
-	ByteCpy(ct, dst, 16);
+	ByteCpy(ct, dst2, 16);
 	r = ClefiaKeySet(rk, skey, 128);
-	ClefiaDecrypt(dst, ct, rk, r);
-	printf("plaintext : "); BytePut(dst, 16);
+	ClefiaDecrypt(dst2, ct, rk, r);
+	printf("plaintext : "); BytePut(dst2, 16);
 
-	///* for 192-bit key */
+	/*for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 16; j++)
+		{
+			for (int k = 0; k < 16; k++)
+			{
+				printf("%02x, ",*(*(tables+i)+j*16+k));
+			}
+			printf("\n");
+		}
+		printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>.\n");
+	}*/
+
+	//* for 192-bit key */
 	//printf("--- CLEFIA-192 ---\n");
-	///* encryption */
+	//* encryption */
 	//r = ClefiaKeySet(rk, skey, 192);
 	//ClefiaEncrypt(dst, pt, rk, r);
 	//printf("ciphertext: "); BytePut(dst, 16);
-	///* decryption */
+	//* decryption */
 	//ByteCpy(ct, dst, 16);
 	//r = ClefiaKeySet(rk, skey, 192);
 	//ClefiaDecrypt(dst, ct, rk, r);
 	//printf("plaintext : "); BytePut(dst, 16);
 
-	///* for 256-bit key */
+	//* for 256-bit key */
 	//printf("--- CLEFIA-256 ---\n");
-	///* encryption */
+	//* encryption */
 	//r = ClefiaKeySet(rk, skey, 256);
 	//ClefiaEncrypt(dst, pt, rk, r);
 	//printf("ciphertext: "); BytePut(dst, 16);
-	///* decryption */
+	//* decryption */
 	//ByteCpy(ct, dst, 16);
 	//r = ClefiaKeySet(rk, skey, 256);
 	//ClefiaDecrypt(dst, ct, rk, r);

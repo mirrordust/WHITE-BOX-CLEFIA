@@ -35,10 +35,12 @@ void ClefiaKeySet256(unsigned char *rk, const unsigned char *skey);
 
 //Add
 void RandomNumber(unsigned char * R);//产生随机数
+void RandomNumber_32bit(unsigned char * R, int number); // 产生随机数
 void WBF0Table(unsigned char ** tables, unsigned char * rk, unsigned char * r1, unsigned char * r2, unsigned char * r3);
 void WBF1Table(unsigned char ** tables, unsigned char * rk, unsigned char * r1, unsigned char * r2, unsigned char * r3);
-void WBTableSet128(unsigned char ** tables, unsigned char * rk, unsigned char * R, unsigned char * wk);
+void WBTableSet128(unsigned char ** tables, unsigned char * rk, unsigned char * R, unsigned char * wk, unsigned char * C_out);
 void WBInterEnc128(unsigned char * ct, const unsigned char * pt, unsigned char ** tables);
+void WBInterDec128(unsigned char * pt, const unsigned char * ct, unsigned char ** tables);
 void test(unsigned char * ct, const unsigned char * pt, unsigned char ** tables);
 //void WBGfn4(unsigned char ** tables, unsigned char * y, const unsigned char * x, int r);
 //void WBEncrypt(unsigned char ** table, unsigned char * Cout,unsigned char * ct, const unsigned char * pt, const int r);

@@ -29,20 +29,34 @@ unsigned char ClefiaMul2(unsigned char x)
 #define ClefiaMulA(_x) (ClefiaMul2((_x)) ^ ClefiaMul8((_x)))
 
 
-//产生随机数
-void RandomNumber(unsigned char * R)
+
+//void RandomNumber(unsigned char * R)
+//{
+//	const int max_rn_count = (26 - 2) * 2;
+//	unsigned char _R[max_rn_count * 4];
+//	srand(time(NULL));
+//	int t = 0;
+//	unsigned char * r;
+//	for (int i = 0; i < max_rn_count * 4 / 2; i++){
+//		t = rand();
+//		r = (unsigned char *)&t;
+//		ByteCpy(_R + 2 * i, r, 2);
+//	}
+//	ByteCpy(R, _R, max_rn_count * 4);
+//}
+
+// 产生随机数
+void RandomNumber_32bit(unsigned char * R, int number)
 {
-	const int max_rn_count = (26 - 2) * 2;
-	unsigned char _R[max_rn_count * 4];
 	srand(time(NULL));
 	int t = 0;
 	unsigned char * r;
-	for (int i = 0; i < max_rn_count * 4 / 2; i++){
+	for (int i = 0; i < number * 4 / 2; i++){
 		t = rand();
 		r = (unsigned char *)&t;
-		ByteCpy(_R + 2 * i, r, 2);
+		ByteCpy(R + 2 * i, r, 2);
 	}
-	ByteCpy(R, _R, max_rn_count * 4);
+	
 }
 
 void WBF0Table(unsigned char ** tables, unsigned char * rk, unsigned char * r1, unsigned char * r2, unsigned char * r3)
@@ -275,26 +289,26 @@ void WBF1Table(unsigned char ** tables, unsigned char * rk, unsigned char * r1, 
 	}
 }
 
-void WBTableSet128(unsigned char ** tables, unsigned char * rk, unsigned char * R, unsigned char * wk)
+void WBTableSet128(unsigned char ** tables, unsigned char * rk, unsigned char * R, unsigned char * wk, unsigned char * C_out)
 {
 	rk += 8;
 	unsigned char zero[4] = {0,0,0,0};
 	for (int i = 0; i < 18; i++)
 	{
 		if (0 == i){
-			WBF0Table(tables, rk, zero, R, wk);
-			WBF1Table(tables + 16, rk + 4, zero, R + 4, wk + 4);
+			WBF0Table(tables, rk, C_out + 0, R, wk);
+			WBF1Table(tables + 16, rk + 4, C_out + 4, R + 4, wk + 4);
 			R += 8;
 		}else if (1 == i){
-			WBF0Table(tables, rk, R - 8, zero, R);
-			WBF1Table(tables + 16, rk + 4, R - 4, zero, R + 4);
+			WBF0Table(tables, rk, R - 8, C_out + 4, R);
+			WBF1Table(tables + 16, rk + 4, R - 4, C_out + 0, R + 4);
 			R += 8;
 		}else if (16 == i){
-			WBF0Table(tables, rk, R - 8, R - 12, zero);
-			WBF1Table(tables + 16, rk + 4, R - 4, R - 16, zero);
+			WBF0Table(tables, rk, R - 8, R - 12, C_out + 8);
+			WBF1Table(tables + 16, rk + 4, R - 4, R - 16, C_out + 12);
 		}else if (17 == i){
-			WBF0Table(tables, rk, zero, R - 4, wk + 8);
-			WBF1Table(tables + 16, rk + 4, zero, R - 8, wk + 12);
+			WBF0Table(tables, rk, C_out + 8, R - 4, wk + 8);
+			WBF1Table(tables + 16, rk + 4, C_out + 12, R - 8, wk + 12);
 			break;
 		}else{
 			WBF0Table(tables, rk, R - 8, R - 12, R);
@@ -710,6 +724,22 @@ void WBInterEnc128(unsigned char * ct, const unsigned char * pt, unsigned char *
 		}
 	}
 	ByteCpy(ct,fout,16);
+}
+
+void WBInterDec128(unsigned char * pt, const unsigned char * ct, unsigned char ** tables)
+{
+	unsigned char items[32], fin[16], fout[16], temp[4];
+	ByteCpy(fin, ct, 16);
+	for (int i = 0; i < 18; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			for (int k = 0; k < 4; k++)
+			{
+
+			}
+		}
+	}
 }
 
 //void WBEncrypt(unsigned char ** table, unsigned char * Cout,unsigned char * ct, const unsigned char * pt, const int r)
